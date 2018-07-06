@@ -3,23 +3,27 @@
     <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
 <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
     <header>
-      <span>List of Traders</span>
+      <span>Hyperledger Composer - frontend</span>
     </header>
     <main>
 
-      <button id="btn" class="" v-if="tradersStart" @click="tradersStart = !tradersStart">Traders</button>
+      <div style="margin-bottom: 30px">
 
-      <button id="btn" class="" v-if="!tradersStart" @click="getTraders">View all traders </button>
-      <button id="btn" class="" v-if="!tradersStart" @click="createTrader">Create new trader</button>
-      <button id="btn" class="" v-if="!tradersStart" @click="goBack">Back</button>
+      <button id="btn" class="btn btn-success btn-lg" v-if="tradersStart" @click="tradersStart = !tradersStart">Traders</button>
 
+      <button id="btn" class="btn btn-success btn-lg" v-if="!tradersStart" @click="getTraders">View all traders </button>
+      <button id="btn" class="btn btn-success btn-lg" v-if="!tradersStart" @click="createTrader">Create new trader</button>
+      <button id="btn" class="btn btn-success btn-lg" v-if="!tradersStart" @click="goBack">Back</button>
 
+      </div>
 
       <div class="wrapper">
         <div class="row">
           <div class="col-md-12" v-if="loadTraders">
             <ul class="list-group">
-              <li v-for="trader in traders" :key="trader.tradeId" class="list-group-item">{{ trader.tradeId }} {{ trader.firstName }} {{ trader.lastName }} <button id="btn" class="" @click="deleteTrader(trader.tradeId)">Delete</button></li>
+              <li v-for="trader in traders" :key="trader.tradeId" class="list-group-item">{{ trader.tradeId }} {{ trader.firstName }} {{ trader.lastName }} 
+                <button id="btn" class="btn btn-outline-danger btn-sm" @click="deleteTrader(trader.tradeId)">Delete</button>
+              </li>
               
             </ul>
           </div>
@@ -38,7 +42,7 @@
                   <input type="text" class="form-control" id="prezime" placeholder="Prezime" v-model="surname">
                 </div>
                 
-                <button type="submit" class="btn" @submit.prevent="setTrader">Submit</button>
+                <button type="submit" class="btn btn-outline-success" @submit.prevent="setTrader">Submit</button>
               </form>
 
               
@@ -67,7 +71,8 @@
         surname: '',
         tradersStart: true,
         loadTraders: false,
-        createNewTrader: false
+        createNewTrader: false,
+        errorCode: ''
       }
     },
     methods: {
@@ -88,7 +93,9 @@
         API.get()
           .then((response) => {
             this.traders = response.data;
+            this.errorCode = response.status;
             console.log(response.data);
+            console.log(response.status);
             console.log(this.id_status = this.traders.length);
           }, (error) => {
             console.log(error);
@@ -96,48 +103,68 @@
       },
       deleteTrader: function(deleteId){
           API.delete('/' + deleteId)
-          .then((response) => console.log(response.data))
+          .then((response) => {
+            this.errorCode = response.status;
+            if(response.status == 204){
+              this.getTraders();
+            }
+            console.log(response.status);
+            console.log(response.data)
+          })
       },
-      setTrader: function() {
-         console.log(this.name, this.surname,  this.id );
-      // if (this.id_status <9){
-      //    this.id_status="T0" + (this.id_status+1);
-      //    }
-      //    else{
-      //    this.id_status="T" + (this.id_status+1);
-      //  }
-           
-      API.post('', {
-      tradeId: this.id, 
-      firstName: this.name, 
-      lastName: this.surname,
-    }, {headers: {
-      'Content-type': 'application/json;charset=utf-8',
-    }}).then((response) => console.log('response: ', JSON.stringify(response, null, 2)))
-    .catch((error) => {
-        // Error
-         this.serverError = true;
-        if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
-            // console.log(error.response.data);
-            this.errorCode = 'Error code: ' + error.response.status;
-             console.log(error.response.status);
-            // console.log(error.response.headers);
-        } else if (error.request) {
-            this.errorCode = 'The request was made but no response was received!'
-            // The request was made but no response was received
-            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-            // http.ClientRequest in node.js
-            console.log(error.request);
-        } else {
-            // Something happened in setting up the request that triggered an Error
-            this.errorCode = 'Error: ' + error.message
-            console.log('Error', error.message);
-        }
-        console.log(error.config);
-    });
-  }
+      setTrader: function () {
+        console.log(this.name, this.surname, this.id);
+        // if (this.id_status <9){
+        //    this.id_status="T0" + (this.id_status+1);
+        //    }
+        //    else{
+        //    this.id_status="T" + (this.id_status+1);
+        //  }
+
+        API.post('', {
+            tradeId: this.id,
+            firstName: this.name,
+            lastName: this.surname,
+          }, {
+            headers: {
+              'Content-type': 'application/json;charset=utf-8',
+            }
+          }).then((response) => {
+            console.log('response: ', JSON.stringify(response, null, 2));
+            this.errorCode = response.status;
+            console.log(response.status);
+            if(response.status == 200){
+            this.id = '',
+            this.name = '',
+            this.surname = ''
+            }
+          })
+          .catch((error) => {
+            // Error
+            this.serverError = true;
+            if (error.response) {
+              // The request was made and the server responded with a status code
+              // that falls out of the range of 2xx
+              // console.log(error.response.data);
+              this.errorCode = error.response.status;
+              console.log('povratni kod je: ' + error.response.status);
+              // console.log(error.response.headers);
+            } else if (error.request) {
+              this.errorCode = 'The request was made but no response was received!'
+              // The request was made but no response was received
+              // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+              // http.ClientRequest in node.js
+              console.log(error.request);
+            } else {
+              // Something happened in setting up the request that triggered an Error
+              console.log('Error', error.message);
+            }
+            console.log(error.config);
+          });
+      }, 
+      showResponse: function(){
+
+      }
     }
   }
 
@@ -183,7 +210,7 @@ import bootstrap-vue/dist/bootstrap-vue.css
     padding-top: 16px;
   }
 
-  button {
+  /* button {
     background: #51B767;
     color: #ffffff;
     padding: 15px;
@@ -191,7 +218,7 @@ import bootstrap-vue/dist/bootstrap-vue.css
     font-weight: bold;
     font-size: 15px;
     border: 0;
-  }
+  } */
 
   .cards {
     background: #F5F5F5;
