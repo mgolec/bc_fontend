@@ -19,16 +19,33 @@
 
       <div class="wrapper">
         <div class="row">
-          <div class="col-md-12" v-if="loadTraders">
-            <ul class="list-group">
-              
-              <li v-for="trader in traders" :key="trader.tradeId" class="list-group-item">{{ trader.tradeId }} {{ trader.firstName }} {{ trader.lastName }}    
-                <button id="btn" class="btn btn-outline-danger btn-sm" @click="deleteTrader(trader.tradeId)">Delete</button>
-              </li>
-              
-            </ul>
+          <div class="offset-md-2 col-md-8">
+            <table class="table table-hover" v-if="loadTraders">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">First Name</th>
+                  <th scope="col">Last Name</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="trader in traders" :key="trader.tradeId">
+                  <th scope="row">{{ trader.tradeId }}</th>
+                  <td>{{ trader.firstName }}</td>
+                  <td>{{ trader.lastName }}</td>
+                  <td>
+                    <button id="btn" class="btn btn-outline-danger btn-sm" @click="deleteTrader(trader.tradeId)">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
+      </div>
 
+      <div class="wrapper">
+        <div class="row">
           <div class="offset-md-3 col-md-6" v-if="createNewTrader">
             
                <form method="post" @submit.prevent="setTrader">
