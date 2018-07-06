@@ -4,9 +4,12 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import BootstrapVue from 'bootstrap-vue'
+import Toasted from 'vue-toasted'
 
+Vue.use(Toasted)
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
+window.Vue = Vue
 
 /* eslint-disable no-new */
 new Vue({

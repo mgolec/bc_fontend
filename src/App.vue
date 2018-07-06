@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
-<link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
     <header>
       <span>Hyperledger Composer - frontend</span>
     </header>
@@ -19,21 +19,39 @@
 
       <div class="wrapper">
         <div class="row">
-          <div class="col-md-12" v-if="loadTraders">
-            <ul class="list-group">
-              <li v-for="trader in traders" :key="trader.tradeId" class="list-group-item">{{ trader.tradeId }} {{ trader.firstName }} {{ trader.lastName }} 
-                <button id="btn" class="btn btn-outline-danger btn-sm" @click="deleteTrader(trader.tradeId)">Delete</button>
-              </li>
-              
-            </ul>
+          <div class="offset-md-2 col-md-8">
+            <table class="table table-hover" v-if="loadTraders">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">First Name</th>
+                  <th scope="col">Last Name</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="trader in traders" :key="trader.tradeId">
+                  <th scope="row">{{ trader.tradeId }}</th>
+                  <td>{{ trader.firstName }}</td>
+                  <td>{{ trader.lastName }}</td>
+                  <td>
+                    <button id="btn" class="btn btn-outline-danger btn-sm" @click="deleteTrader(trader.tradeId)">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
+      </div>
 
+      <div class="wrapper">
+        <div class="row">
           <div class="offset-md-3 col-md-6" v-if="createNewTrader">
             
                <form method="post" @submit.prevent="setTrader">
                 <div class="form-group">
                   <br><br>
-                  <input type="number" class="form-control" id="id" placeholder="ID" v-model="id">
+                  <input type="text" class="form-control" id="id" placeholder="ID" v-model="id">
                    </div>
                 <div class="form-group">
                   <input type="text" class="form-control" id="ime" placeholder="Ime" v-model="name">
@@ -72,7 +90,6 @@
         tradersStart: true,
         loadTraders: false,
         createNewTrader: false,
-        errorCode: ''
       }
     },
     methods: {
@@ -89,24 +106,40 @@
       getTraders: function () {
         this.createNewTrader = false;
         this.loadTraders = true;
-
         API.get()
           .then((response) => {
             this.traders = response.data;
-            this.errorCode = response.status;
             console.log(response.data);
             console.log(response.status);
             console.log(this.id_status = this.traders.length);
           }, (error) => {
+            Vue.toasted.error('Error while loading traders:' + error.response.status, { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 2500
+        });
             console.log(error);
           })
       },
       deleteTrader: function(deleteId){
           API.delete('/' + deleteId)
           .then((response) => {
-            this.errorCode = response.status;
             if(response.status == 204){
+              Vue.toasted.success('successfully deleted', { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 2500
+        });
               this.getTraders();
+            }else{
+              Vue.toasted.error('delete error', { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 2500
+        });
             }
             console.log(response.status);
             console.log(response.data)
@@ -131,9 +164,14 @@
             }
           }).then((response) => {
             console.log('response: ', JSON.stringify(response, null, 2));
-            this.errorCode = response.status;
             console.log(response.status);
             if(response.status == 200){
+            Vue.toasted.success('successfully added new entery', { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 2500
+        });
             this.id = '',
             this.name = '',
             this.surname = ''
@@ -141,30 +179,42 @@
           })
           .catch((error) => {
             // Error
-            this.serverError = true;
             if (error.response) {
               // The request was made and the server responded with a status code
               // that falls out of the range of 2xx
               // console.log(error.response.data);
-              this.errorCode = error.response.status;
+              Vue.toasted.error('Error while adding new entery. Error code: ' + error.response.status, { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 2500
+        });
               console.log('povratni kod je: ' + error.response.status);
               // console.log(error.response.headers);
             } else if (error.request) {
-              this.errorCode = 'The request was made but no response was received!'
+              Vue.toasted.error('Error while adding new entery. Error code: ' + error.response.status, { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 2500
+        });
               // The request was made but no response was received
               // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
               // http.ClientRequest in node.js
               console.log(error.request);
             } else {
               // Something happened in setting up the request that triggered an Error
+              Vue.toasted.error('Error while adding new entery. Error code: ' + error.response.status, { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 2500
+        });
               console.log('Error', error.message);
             }
             console.log(error.config);
           });
       }, 
-      showResponse: function(){
-
-      }
     }
   }
 
