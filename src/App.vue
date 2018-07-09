@@ -17,6 +17,10 @@
 
       </div>
 
+      <div v-if="loading">
+        <img src="../src/assets/loader.gif" />
+      </div>
+
       <div class="wrapper">
         <div class="row">
           <div class="offset-md-2 col-md-8">
@@ -90,6 +94,7 @@
         tradersStart: true,
         loadTraders: false,
         createNewTrader: false,
+        loading: false
       }
     },
     methods: {
@@ -106,13 +111,23 @@
       getTraders: function () {
         this.createNewTrader = false;
         this.loadTraders = true;
+        this.loading = true;
         API.get()
           .then((response) => {
+            this.loading = false;
             this.traders = response.data;
             console.log(response.data);
             console.log(response.status);
-            console.log(this.id_status = this.traders.length);
+            console.log(this.id_status = this.traders.length); 
           }, (error) => {
+            this.loading = false;
+            if (error.message === "Network Error"){
+              Vue.toasted.error("Error! Can't reach server!", { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 5500
+        });}
             Vue.toasted.error('Error while loading traders:' + error.response.status, { 
               theme: "outline", 
               position: "bottom-center",
@@ -123,8 +138,10 @@
           })
       },
       deleteTrader: function(deleteId){
+          this.loading = true;
           API.delete('/' + deleteId)
           .then((response) => {
+            this.loading = false;
             if(response.status == 204){
               Vue.toasted.success('successfully deleted', { 
               theme: "outline", 
@@ -134,6 +151,7 @@
         });
               this.getTraders();
             }else{
+              this.loading = false;
               Vue.toasted.error('delete error', { 
               theme: "outline", 
               position: "bottom-center",
@@ -153,7 +171,7 @@
         //    else{
         //    this.id_status="T" + (this.id_status+1);
         //  }
-
+        this.loading = true;
         API.post('', {
             tradeId: this.id,
             firstName: this.name,
@@ -163,6 +181,7 @@
               'Content-type': 'application/json;charset=utf-8',
             }
           }).then((response) => {
+            this.loading = false;
             console.log('response: ', JSON.stringify(response, null, 2));
             console.log(response.status);
             if(response.status == 200){
@@ -178,7 +197,15 @@
             }
           })
           .catch((error) => {
+            this.loading = false;
             // Error
+             if (error.message === "Network Error"){
+              Vue.toasted.error("Error! Can't reach server!", { 
+              theme: "outline", 
+              position: "bottom-center",
+              fullWidth: true, 
+              duration : 5500
+        });}
             if (error.response) {
               // The request was made and the server responded with a status code
               // that falls out of the range of 2xx
